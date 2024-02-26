@@ -29,26 +29,78 @@ blank_board = {
 
 def read_board(filename):
     '''Read the previously existing board from the file if it exists.'''
-    # Put file reading code here.
-    return blank_board['board']
+    # Read the file  if it exists.
+    try:
+        file = open(filename, "r")
+        board_text = file.read()
+        board_json = json.loads(board_text)
+        return board_json('board')
+    # Generate blank board otherwise.
+    except:
+        return blank_board('board ')
 
 def save_board(filename, board):
     '''Save the current game to a file.'''
     # Put file writing code here.
+    with open(filename, "w") as file:
+        board_json = {}
+        board_json['board'] = board
+        board_text = json.dumps(board_json)
+        file.write(board_text)
+
 
 def display_board(board):
     '''Display a Tic-Tac-Toe board on the screen in a user-friendly way.'''
     # Put display code here.
+    # Iterate through each row
+    for row in range(3):
+        # There is a horizontal bar before evry row except the first.
+        if row != 0:
+            print("---+---+---")
+        # Display each element in a row.
+        for col in range(3):
+            print(' ', board[row * 3 + col], ' ', 
+                  sep = '', end = '\n' if col == 2 else '|')            
+
+
 
 def is_x_turn(board):
     '''Determine whose turn it is.'''
     # Put code here determining if it is X's turn.
-    return True
+    num_X = 0
+    num_O = 0
+
+    # Count the nubmer of X's and O's.
+    for square in board:
+        if square == X:
+            num_X += 1
+        if square == O:
+            num_O += 1
+    return num_X == num_O
+
+
 
 def play_game(board):
     '''Play the game of Tic-Tac-Toe.'''
     # Put game play code here. Return False when the user has indicated they are done.
-    return False
+    # Place the prompt on the screen.
+    x_turn = is_x_turn(board)
+    user_input = input("X>" if x_turn else "O>")
+    square = int(user_input) -1 if user_input.isdigit() else -1
+
+    # Accept input from the user.
+    if 0 <= square <= 8:
+        if board[square] == BLANK:
+            board[int(user_input) -1] = X if x_turn else 0
+        else:
+            print("That square is taken. Try again.")
+            return True
+    else:
+        return False
+    
+# Read the board if one exists.
+board = read_board("board.json")
+
 
 def game_done(board, message=False):
     '''Determine if the game is finished.
@@ -101,4 +153,9 @@ print("---+---+---")
 print(" 7 | 8 | 9 \n")
 print("The current board is:")
 
+display_board(board)
+while play_game(board) and not game_done(board, message=True):
+    display_board(board)
+
 # The file read code, game loop code, and file close code goes here.
+save_board("board,json",  blank_board['board'] if game_done(board) else board)
